@@ -1,0 +1,17 @@
+{
+  "name": "ghec-audit-log-js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "audit-log-ghec-cli.js",
+  "scripts": {
+    "start": "node audit-log-ghec-cli.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@octokit/graphql": "^4.3.1",
+    "minimist": "^1.2.5",
+    "yaml": "^1.9.2"
+  }
+}

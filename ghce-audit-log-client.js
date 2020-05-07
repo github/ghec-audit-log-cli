@@ -1,4 +1,4 @@
-const {allEntriesQuery, newEntriesQuery} = require('./audit-log-queries');
+const {allEntriesQuery, newEntriesQuery} = require('./ghec-audit-log-queries');
 
 async function requestAllEntries(requestExecutor, org){
   let entries = [];
@@ -9,13 +9,13 @@ async function requestAllEntries(requestExecutor, org){
 
   let firstPageCursor = null;
   let hasNextPage = true;
-  while(hasNextPage) {
+  // while(hasNextPage) {
     const data = await requestExecutor(allEntriesQuery, variables);
     entries = entries.concat(data.organization.auditLog.nodes);
     hasNextPage = data.organization.auditLog.pageInfo.hasNextPage;
     variables.page = data.organization.auditLog.pageInfo.endCursor;
     if(!firstPageCursor) firstPageCursor = data.organization.auditLog.pageInfo.startCursor
-  }
+  // }
   return {data: entries, newestCursor: firstPageCursor};
 }
 

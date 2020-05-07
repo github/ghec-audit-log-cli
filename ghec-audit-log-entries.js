@@ -5,9 +5,9 @@ const auditEntry = `
     }
 `;
 
-const auditLogEntries = `
+const ghecAuditLogEntries = `
     __typename
     ${auditEntry}
 `;
 
-module.exports = auditLogEntries;
+module.exports = ghecAuditLogEntries;

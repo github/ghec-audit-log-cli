@@ -1,17 +1,24 @@
 {
-  "name": "ghec-audit-log-js",
+  "name": "ghec-audit-log-cli",
   "version": "1.0.0",
   "description": "",
-  "main": "audit-log-ghec-cli.js",
+  "main": "ghec-audit-log-cli.js",
   "scripts": {
-    "start": "node audit-log-ghec-cli.js"
+    "start": "node ghec-audit-log-cli"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/droidpl/ghec-audit-log-cli.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Javier de Pedro López <droidpl@github.com>",
+  "license": "MIT",
   "dependencies": {
     "@octokit/graphql": "^4.3.1",
     "commander": "^5.1.0",
     "yaml": "^1.9.2"
+  },
+  "bin": {
+    "ghec-audit-log-cli": "./ghec-audit-log-cli.js"
   }
 }

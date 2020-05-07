@@ -9,7 +9,7 @@ You can build an sh script on top of this one to store the data or query it.
 ### CLI arguments
 This script can take the following arguments:
 ```
-> node audit-log-ghec-cli.js "--help"
+> node ghec-audit-log-cli.js "--help"
 
 Usage: audit-log-ghec-cli [options]
 
@@ -39,10 +39,24 @@ Execute the command using node or npm.
 
 #### npm
 ```shell script
-npm run start -- --pretty
+$ npm run start -- --pretty
 ```
 
 ### node
 ```shell script
-node audit-log-ghec-cli --pretty
+$ node audit-log-ghec-cli --pretty
+```
+
+### Installing as CLI
+
+Optionally you can install the script as a CLI and run it from the command line. To install it run:
+```shell script
+$ git clone https://github.com/droidpl/ghec-audit-log-cli
+$ cd ghec-audit-log-cli
+$ npm link
+```
+
+Then you can execute the script as a CLI using:
+```shell script
+$ ghec-audit-log-cli -v
 ```

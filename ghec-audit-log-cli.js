@@ -1,7 +1,8 @@
+#! /usr/bin/env node
 const YAML = require('yaml');
 const fs = require('fs');
 const {graphql} = require('@octokit/graphql');
-const {requestNewestEntries, requestAllEntries} = require('./audit-log-client');
+const {requestNewestEntries, requestAllEntries} = require('./ghce-audit-log-client');
 
 //---- Obtain configuration
 const { program } = require('commander');
@@ -23,7 +24,7 @@ const pretty = program.pretty || false;
 const token = program.token || config.token;
 const org = program.org || config.org;
 
-//TODO maybe support other format like PUTVAL?
+//TODO idea: maybe add support for other formats like PUTVAL to forward the data in an easier way
 
 //---- Run validation
 if (!token) {

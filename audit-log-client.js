@@ -7,31 +7,33 @@ async function requestAllEntries(requestExecutor, org){
     "page":  null,
   };
 
+  let firstPageCursor = null;
   let hasNextPage = true;
-  // while(hasNextPage) {
+  while(hasNextPage) {
     const data = await requestExecutor(allEntriesQuery, variables);
     entries = entries.concat(data.organization.auditLog.nodes);
     hasNextPage = data.organization.auditLog.pageInfo.hasNextPage;
     variables.page = data.organization.auditLog.pageInfo.endCursor;
-  // }
-  return entries;
+    if(!firstPageCursor) firstPageCursor = data.organization.auditLog.pageInfo.startCursor
+  }
+  return {data: entries, newestCursor: firstPageCursor};
 }
 
 async function requestNewestEntries(requestExecutor, org, cursor) {
   let entries = [];
   let variables = {
-    "login": org,
+    "org": org,
     "page":  cursor,
   };
 
-  let hasNextPage = true;
-  // while(hasNextPage) {
+  let hasPreviousPage = true;
+  while(hasPreviousPage) {
     const data = await requestExecutor(newEntriesQuery, variables);
     entries = entries.concat(data.organization.auditLog.nodes);
-    hasNextPage = data.organization.auditLog.pageInfo.hasNextPage;
+    hasPreviousPage = data.organization.auditLog.pageInfo.hasPreviousPage;
     variables.page = data.organization.auditLog.pageInfo.startCursor;
-  // }
-  return {data: entries, cursor: variables.page};
+  }
+  return {data: entries, newestCursor: variables.page};
 }
 
 module.exports  = {

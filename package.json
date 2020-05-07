@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@octokit/graphql": "^4.3.1",
-    "minimist": "^1.2.5",
+    "commander": "^5.1.0",
     "yaml": "^1.9.2"
   }
 }

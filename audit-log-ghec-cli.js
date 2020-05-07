@@ -4,15 +4,26 @@ const {graphql} = require('@octokit/graphql');
 const {requestNewestEntries, requestAllEntries} = require('./audit-log-client');
 
 //---- Obtain configuration
-const argv = require('minimist')(process.argv.slice(2));
+const { program } = require('commander');
+program.version('1.0.0',  '-v, --version', 'Output the current version')
+    .option('-t, --token <string>', 'the token to access the API (mandatory)')
+    .option('-o, --org <string>', 'the organization we want to extract the audit log from')
+    .option('-cfg, --config <string>', 'location for the config yaml file. Default ".ghec-audit-log"', './.ghec-audit-log')
+    .option('-p, --pretty', 'prints the json data in a readable format', false)
+    .option('-c, --cursor <string>', 'if provided, this cursor will be used to query the newest entries from the cursor provided. If not present,\n' +
+        '              the result will contain all the audit log from the org');
 
-const configLocation = argv.cfg || './.ghec-audit-log';
+program.parse(process.argv);
+
+const configLocation = program.cfg || './.ghec-audit-log';
 const config = YAML.parse(fs.readFileSync(configLocation, 'utf8'));
 
-const cursor = argv.cursor || null;
-const pretty = argv.pretty || false;
-const token = argv.token || config.token;
-const org = argv.org || config.org;
+const cursor = program.cursor || null;
+const pretty = program.pretty || false;
+const token = program.token || config.token;
+const org = program.org || config.org;
+
+//TODO maybe support other format like PUTVAL?
 
 //---- Run validation
 if (!token) {
@@ -27,23 +38,25 @@ if (!org) {
  * Function containing all the queries
  */
 async function queryAuditLog() {
-    // Execute the query
-    let entries;
+    // Select the query to run
+    let queryRunner;
     if (cursor) {
-        let {data, cursor} = await requestNewestEntries(graphqlWithAuth, org, cursor);
-        entries = data;
-        fs.writeFileSync('.last-cursor-update', cursor)
+        queryRunner = () => requestNewestEntries(graphqlWithAuth, org, cursor);
     } else {
-        entries = await requestAllEntries(graphqlWithAuth, org);
+        queryRunner = () => requestAllEntries(graphqlWithAuth, org);
     }
 
-    let json;
+    // Run the query and store the most recent cursor
+    let {data, newestCursor} = await queryRunner();
+    let entries = data;
+    fs.writeFileSync('.last-cursor-update', newestCursor);
+
+    // Return the data
     if (pretty) {
-        json = JSON.stringify(entries, null, 4);
+        return JSON.stringify(entries, null, 4);
     } else {
-        json = JSON.stringify(entries);
+        return JSON.stringify(entries);
     }
-    return json;
 }
 
 

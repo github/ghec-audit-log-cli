@@ -9,13 +9,20 @@ You can build an sh script on top of this one to store the data or query it.
 ### CLI arguments
 This script can take the following arguments:
 ```
-Arguments
-    --token: the token to access the API (mandatory)
-    --org: the organization we want to extract the audit log from (mandatory)
-    --pretty: prints the json data in a readable format. Default: false
-    --cfg: location for the config yaml file. Default '.ghec-audit-log'
-    --cursor: if provided, this cursor will be used to query the newest entries from the cursor provided. If not present,
-              the result will contain all the audit log from the org.
+> node audit-log-ghec-cli.js "--help"
+
+Usage: audit-log-ghec-cli [options]
+
+Options:
+  -v, --version            Output the current version
+  -t, --token <string>     the token to access the API (mandatory)
+  -o, --org <string>       the organization we want to extract the audit log from
+  -cfg, --config <string>  location for the config yaml file. Default ".ghec-audit-log" (default: "./.ghec-audit-log")
+  -p, --pretty             prints the json data in a readable format (default: false)
+  -c, --cursor <string>    if provided, this cursor will be used to query the newest entries from the cursor provided. If not present,
+                the result will contain all the audit log from the org
+  -h, --help               display help for command
+
 ```
 
 Optionally, you can create a file called `.ghec-audit-log` that supports

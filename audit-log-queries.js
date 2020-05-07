@@ -3,8 +3,9 @@ const auditLogEntries = require('./audit-log-entries');
 const allEntriesQuery = `
 query($org: String!, $page: String) {
   organization(login: $org) {
-    auditLog(first: 1, after: $page){
+    auditLog(first: 100, after: $page){
       pageInfo {
+        startCursor
         endCursor
         hasNextPage
       }
@@ -18,7 +19,7 @@ query($org: String!, $page: String) {
 const newEntriesQuery = `
 query($org: String!, $page: String!) {
   organization(login: $org) {
-    auditLog(last: 1, before: $page){
+    auditLog(last: 100, before: $page){
       pageInfo {
         startCursor
         hasNextPage

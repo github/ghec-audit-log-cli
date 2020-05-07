@@ -3,7 +3,7 @@ const auditLogEntries = require('./ghec-audit-log-entries');
 const allEntriesQuery = `
 query($org: String!, $page: String) {
   organization(login: $org) {
-    auditLog(first: 1, after: $page){
+    auditLog(first: 100, after: $page){
       pageInfo {
         startCursor
         endCursor

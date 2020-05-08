@@ -50,7 +50,7 @@ async function queryAuditLog() {
     // Run the query and store the most recent cursor
     let {data, newestCursor} = await queryRunner();
     let entries = data;
-    fs.writeFileSync('.last-cursor-update', newestCursor);
+    if(newestCursor) fs.writeFileSync('.last-cursor-update', newestCursor);
 
     // Return the data
     if (pretty) {

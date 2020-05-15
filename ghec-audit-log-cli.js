@@ -2,7 +2,7 @@
 const YAML = require('yaml');
 const fs = require('fs');
 const {graphql} = require('@octokit/graphql');
-const {requestNewestEntries, requestAllEntries} = require('./ghce-audit-log-client');
+const {requestEntries} = require('./ghce-audit-log-client');
 
 //---- Obtain configuration
 const { program } = require('commander');
@@ -42,15 +42,15 @@ async function queryAuditLog() {
     // Select the query to run
     let queryRunner;
     if (cursor) {
-        queryRunner = () => requestNewestEntries(graphqlWithAuth, org, cursor);
+        queryRunner = () => requestEntries(graphqlWithAuth, org, cursor);
     } else {
-        queryRunner = () => requestAllEntries(graphqlWithAuth, org);
+        queryRunner = () => requestEntries(graphqlWithAuth, org);
     }
 
     // Run the query and store the most recent cursor
-    let {data, newestCursor} = await queryRunner();
+    let {data, newestCursorId} = await queryRunner();
     let entries = data;
-    if(newestCursor) fs.writeFileSync('.last-cursor-update', newestCursor);
+    if(newestCursorId) fs.writeFileSync('.last-cursor-update', newestCursorId);
 
     // Return the data
     if (pretty) {

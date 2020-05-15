@@ -1,42 +1,35 @@
-const {allEntriesQuery, newEntriesQuery} = require('./ghec-audit-log-queries');
+const {allEntriesQuery} = require('./ghec-audit-log-queries');
 
-async function requestAllEntries(requestExecutor, org){
+async function requestEntries(requestExecutor, org, cursor){
   let entries = [];
   let variables = {
     "org": org,
     "page":  null,
   };
 
-  let firstPageCursor = null;
   let hasNextPage = true;
-  while(hasNextPage) {
+  let firstPageCursorId = null;
+  let foundCursor = false;
+  while(hasNextPage && !foundCursor) {
     const data = await requestExecutor(allEntriesQuery, variables);
-    entries = entries.concat(data.organization.auditLog.nodes);
+    let newEntries = data.organization.auditLog.nodes;
+    if(cursor != null){
+      let index = newEntries.findIndex((elem) => elem.id === cursor);
+      if(index !== -1){
+        newEntries = newEntries.slice(0, index);
+        foundCursor = true;
+      }
+    }
+    entries = entries.concat(newEntries);
     hasNextPage = data.organization.auditLog.pageInfo.hasNextPage;
     variables.page = data.organization.auditLog.pageInfo.endCursor;
-    if(!firstPageCursor) firstPageCursor = data.organization.auditLog.pageInfo.startCursor
+    if(!firstPageCursorId && newEntries.length !== 0) {
+      firstPageCursorId = newEntries[0].id
+    }
   }
-  return {data: entries, newestCursor: firstPageCursor};
-}
-
-async function requestNewestEntries(requestExecutor, org, cursor) {
-  let entries = [];
-  let variables = {
-    "org": org,
-    "page":  cursor,
-  };
-
-  let hasPreviousPage = true;
-  while(hasPreviousPage) {
-    const data = await requestExecutor(newEntriesQuery, variables);
-    entries = entries.concat(data.organization.auditLog.nodes);
-    hasPreviousPage = data.organization.auditLog.pageInfo.hasPreviousPage;
-    variables.page = data.organization.auditLog.pageInfo.startCursor;
-  }
-  return {data: entries, newestCursor: variables.page};
+  return {data: entries, newestCursorId: firstPageCursorId};
 }
 
 module.exports  = {
-  requestNewestEntries,
-  requestAllEntries
+  requestEntries
 };

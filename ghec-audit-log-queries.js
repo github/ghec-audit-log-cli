@@ -5,23 +5,7 @@ query($org: String!, $page: String) {
   organization(login: $org) {
     auditLog(first: 100, after: $page){
       pageInfo {
-        startCursor
         endCursor
-        hasNextPage
-      }
-      nodes {
-        ${auditLogEntries}        
-      }
-    }
-  }
-}`;
-
-const newEntriesQuery = `
-query($org: String!, $page: String!) {
-  organization(login: $org) {
-    auditLog(last: 100, before: $page){
-      pageInfo {
-        startCursor
         hasNextPage
       }
       nodes {
@@ -33,5 +17,4 @@ query($org: String!, $page: String!) {
 
 module.exports = {
     allEntriesQuery,
-    newEntriesQuery
 };

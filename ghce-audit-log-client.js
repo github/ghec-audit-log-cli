@@ -1,6 +1,6 @@
 const {allEntriesQuery} = require('./ghec-audit-log-queries');
 
-async function requestEntries(requestExecutor, org, cursor){
+async function requestEntries(requestExecutor, org, limit, cursor){
   let entries = [];
   let variables = {
     "org": org,
@@ -10,9 +10,13 @@ async function requestEntries(requestExecutor, org, cursor){
   let hasNextPage = true;
   let firstPageCursorId = null;
   let foundCursor = false;
-  while(hasNextPage && !foundCursor) {
+  let hasLimit = limit || false;
+  let limitReached = false;
+  while(hasNextPage && !foundCursor && !limitReached) {
     const data = await requestExecutor(allEntriesQuery, variables);
     let newEntries = data.organization.auditLog.nodes;
+
+    //Cursor check
     if(cursor != null){
       let index = newEntries.findIndex((elem) => elem.id === cursor);
       if(index !== -1){
@@ -20,9 +24,20 @@ async function requestEntries(requestExecutor, org, cursor){
         foundCursor = true;
       }
     }
+
     entries = entries.concat(newEntries);
     hasNextPage = data.organization.auditLog.pageInfo.hasNextPage;
     variables.page = data.organization.auditLog.pageInfo.endCursor;
+
+    //Check limit
+    if(hasLimit){
+      if(entries.length >= limit) {
+        entries = entries.slice(0, limit);
+      }
+      limitReached = true;
+    }
+
+    //Store last cursor request
     if(!firstPageCursorId && newEntries.length !== 0) {
       firstPageCursorId = newEntries[0].id
     }

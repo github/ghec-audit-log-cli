@@ -11,6 +11,7 @@ program.version('1.0.0',  '-v, --version', 'Output the current version')
     .option('-o, --org <string>', 'the organization we want to extract the audit log from')
     .option('-cfg, --config <string>', 'location for the config yaml file. Default ".ghec-audit-log"', './.ghec-audit-log')
     .option('-p, --pretty', 'prints the json data in a readable format', false)
+    .option('-l, --limit <number>', 'a maximum limit on the number of items retrieved')
     .option('-c, --cursor <string>', 'if provided, this cursor will be used to query the newest entries from the cursor provided. If not present,\n' +
         '              the result will contain all the audit log from the org');
 
@@ -21,6 +22,7 @@ const config = YAML.parse(fs.readFileSync(configLocation, 'utf8'));
 
 const cursor = program.cursor || null;
 const pretty = program.pretty || false;
+const limit = program.limit;
 const token = program.token || config.token;
 const org = program.org || config.org;
 
@@ -42,9 +44,9 @@ async function queryAuditLog() {
     // Select the query to run
     let queryRunner;
     if (cursor) {
-        queryRunner = () => requestEntries(graphqlWithAuth, org, cursor);
+        queryRunner = () => requestEntries(graphqlWithAuth, org, limit, cursor);
     } else {
-        queryRunner = () => requestEntries(graphqlWithAuth, org);
+        queryRunner = () => requestEntries(graphqlWithAuth, org, limit);
     }
 
     // Run the query and store the most recent cursor

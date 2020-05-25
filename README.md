@@ -19,6 +19,7 @@ Options:
   -o, --org <string>       the organization we want to extract the audit log from
   -cfg, --config <string>  location for the config yaml file. Default ".ghec-audit-log" (default: "./.ghec-audit-log")
   -p, --pretty             prints the json data in a readable format (default: false)
+  -l, --limit              a maximum limit on the number of items retrieved
   -c, --cursor <string>    if provided, this cursor will be used to query the newest entries from the cursor provided. If not present,
                 the result will contain all the audit log from the org
   -h, --help               display help for command

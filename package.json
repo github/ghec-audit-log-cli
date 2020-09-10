@@ -11,7 +11,18 @@
     "url": "git://github.com/droidpl/ghec-audit-log-cli.git"
   },
   "keywords": [],
-  "author": "Javier de Pedro López <droidpl@github.com>",
+  "author": {
+    "name": "GitHub Professional Services",
+    "email": "services@github.com",
+    "url": "https://services.github.com"
+  },
+  "contributors": [
+    {
+      "name": "Javier de Pedro López",
+      "email": "droidpl@github.com",
+      "url": "https://github.com/droidpl"
+    }
+  ],
   "license": "MIT",
   "dependencies": {
     "@octokit/graphql": "^4.3.1",

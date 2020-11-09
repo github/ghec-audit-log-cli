@@ -2,7 +2,7 @@
 const YAML = require('yaml');
 const fs = require('fs');
 const {graphql} = require('@octokit/graphql');
-const {requestEntries} = require('./ghce-audit-log-client');
+const {requestEntries} = require('./ghec-audit-log-client');
 
 //---- Obtain configuration
 const { program } = require('commander');
@@ -17,7 +17,12 @@ program.version('1.0.0',  '-v, --version', 'Output the current version')
 program.parse(process.argv);
 
 const configLocation = program.cfg || './.ghec-audit-log';
-const config = YAML.parse(fs.readFileSync(configLocation, 'utf8'));
+let config = {};
+try {
+    config = YAML.parse(fs.readFileSync(configLocation, 'utf8'));
+} catch(e) {
+    console.log(`${configLocation} file missing. Path parameters will apply`);
+}
 
 const cursor = program.cursor || null;
 const pretty = program.pretty || false;

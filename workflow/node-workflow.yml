@@ -8,15 +8,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [12.x]
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 12
         uses: actions/setup-node@v1
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '12'
       # Get the latest cursor file from the repo
       - run: export LAST_CURSOR=$(cat .last-cursor-update)
       # Run the script with the latest cursor if present in the repo
@@ -36,8 +33,8 @@ jobs:
         uses: EndBug/add-and-commit@v5
         with:
           author_name: Audit Log Integration
-          author_email: alwell-kevin@github.com
-          message: "updating cursor for audit log"
+          author_email: integration@yourcompany.com
+          message: "Updating audit log cursor"
           add: ".last-cursor-update"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

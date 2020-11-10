@@ -22,7 +22,7 @@ const configLocation = program.cfg || './.ghec-audit-log';
 let config = {};
 try {
     config = YAML.parse(fs.readFileSync(configLocation, 'utf8'));
-}catch(e) {
+} catch(e) {
     console.log(`${configLocation} file missing. Path parameters will apply`)
 }
 

@@ -27,6 +27,7 @@
   "dependencies": {
     "@octokit/graphql": "^4.3.1",
     "commander": "^5.1.0",
+    "validate.js": "^0.13.1",
     "yaml": "^1.9.2"
   },
   "bin": {

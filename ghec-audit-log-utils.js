@@ -10,7 +10,6 @@ function validateInput (program, config) {
     org: program.org || config.org,
     outputFile: program.file
   }
-  console.log(parsed)
 
   // Validate correctness
   const alphanumericRegex = /^[a-z0-9]+$/i

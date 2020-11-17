@@ -1,6 +1,6 @@
 const validate = require('validate.js')
 const fs = require('fs')
-g
+
 function validateInput (program, config) {
   const parsed = {
     cursor: program.cursor || null,
@@ -64,8 +64,9 @@ function validateInput (program, config) {
   //Check that we can write into that file
   if(parsed.outputFile){
     try {
-      fs.writeFileSync(parsed.outputFile, "")
+      fs.openSync(parsed.outputFile, 'w')
     }catch (e) {
+      console.log(e)
       throw new Error(`The output file ${parsed.outputFile} cannot be written or the path does not exist`)
     }
   }

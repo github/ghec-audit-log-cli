@@ -21,10 +21,10 @@ jobs:
       - run: |
           if [ -z "$LAST_CURSOR" ]; then
             echo "FIRST TIME RUNNING AUDIT LOG POLL"
-            npm start -- --pretty --token ${{secrets.AUDIT_LOG_TOKEN}} --org ${{secrets.ORG_NAME}} >> audit-log-output.json
+            npm start -- --pretty --token ${{secrets.AUDIT_LOG_TOKEN}} --org ${{secrets.ORG_NAME}} --file 'audit-log-output.json'
           else
             echo "RUNNING AUDIT LOG POLL FROM $LAST_CURSOR"
-            npm start -- --pretty --token ${{secrets.AUDIT_LOG_TOKEN}} --org ${{secrets.ORG_NAME}} --cursor $LAST_CURSOR >> audit-log-output.json
+            npm start -- --pretty --token ${{secrets.AUDIT_LOG_TOKEN}} --org ${{secrets.ORG_NAME}} --file 'audit-log-output.json'
           fi
       # Cat the output. Optionally send it somewhere else
       - run: cat audit-log-output.json

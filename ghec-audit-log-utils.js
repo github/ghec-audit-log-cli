@@ -1,5 +1,6 @@
 const validate = require('validate.js')
 const fs = require('fs')
+const path = require('path')
 
 function validateInput (program, config) {
   const parsed = {
@@ -67,6 +68,15 @@ function validateInput (program, config) {
       fs.openSync(parsed.outputFile, 'w')
     }catch (e) {
       throw new Error(`The output file ${parsed.outputFile} cannot be written or the path does not exist. ${e.message}`)
+    }
+  }
+  //Check that if we are in GitHub actions the file is expected to be within the workspace
+  if(process.env.GITHUB_WORKSPACE) {
+    const filePath = path.join(process.env.GITHUB_WORKSPACE, parsed.outputFile)
+    const {dir} = path.parse(filePath)
+
+    if (dir.indexOf(process.env.GITHUB_WORKSPACE) < 0) {
+      throw new Error(`${parsed.outputFile} is not allowed. The directory should be within ${process.env.GITHUB_WORKSPACE}`)
     }
   }
 

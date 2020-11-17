@@ -66,8 +66,7 @@ function validateInput (program, config) {
     try {
       fs.openSync(parsed.outputFile, 'w')
     }catch (e) {
-      console.log(e)
-      throw new Error(`The output file ${parsed.outputFile} cannot be written or the path does not exist`)
+      throw new Error(`The output file ${parsed.outputFile} cannot be written or the path does not exist. ${e.message}`)
     }
   }
 

@@ -26,8 +26,7 @@ jobs:
             echo "RUNNING AUDIT LOG POLL FROM $LAST_CURSOR"
             npm start -- --pretty --token ${{secrets.AUDIT_LOG_TOKEN}} --org ${{secrets.ORG_NAME}} --file 'audit-log-output.json'
           fi
-      # Cat the output. Optionally send it somewhere else
-      - run: cat audit-log-output.json
+          curl -X POST -H "Content-Type: application/json" -d @audit-log-output.json ${{secrets.WEBHOOK_URL}}
       # Commit the .last-cursor-update so we can reuse it in the upcoming workflows
       - name: Commit cursor
         uses: EndBug/add-and-commit@v5

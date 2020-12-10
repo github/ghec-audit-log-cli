@@ -60,7 +60,7 @@ jobs:
       with:
         author_name: Audit Log Integration
         author_email: alwell-kevin@github.com
-        message: "updating cursor for audit log"
+        message: "Updating cursor for audit log"
         add: ".last-cursor-update"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

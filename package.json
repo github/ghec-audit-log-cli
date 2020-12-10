@@ -5,7 +5,7 @@
   "main": "ghec-audit-log-cli.js",
   "scripts": {
     "start": "node ghec-audit-log-cli",
-    "lint": "standard"
+    "lint": "./node_modules/.bin/standard"
   },
   "repository": {
     "type": "git",

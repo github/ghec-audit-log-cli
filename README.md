@@ -76,6 +76,25 @@ This workflow:
 - Forwards those changes to a service
 - Commits the latest cursor for the next call 
 
+## How to use
+- Clone the *audit-log-cli* repository to your Organization
+- Set the **Action** to run on Cron
+- Create the **GitHub Secrets** needed to authenticate
+- Enjoy the logs
+
+## Secret Values
+You will need to create the following **Github Secrets** To allow the tool to work:
+- **AUDIT_LOG_TOKEN**
+  - This is a [GitHub Personal Access Token](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token) used to authenticate to your Organization
+  - **Note:** The token must have the *admin:org* set to be able to pull information
+- **ORG_NAME**
+  - Name of the **GitHub** Organization to poll the audit log
+- **WEBHOOK_URL**
+  - URL to a service where the generated *json* information is piped
+
+### Notes
+- Modify the polling workflow to run on a cron, instead of push
+
 ## Disclaimer
 
 1. This CLI provides all the events that the GitHub API offers through the [GraphQL API](https://docs.github.com/en/free-pro-team@latest/graphql/overview/schema-previews#audit-log). This is

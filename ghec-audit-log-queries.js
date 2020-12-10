@@ -1,4 +1,4 @@
-const auditLogEntries = require('./ghec-audit-log-entries');
+const auditLogEntries = require('./ghec-audit-log-entries')
 
 const allEntriesQuery = `
 query($org: String!, $page: String) {
@@ -13,8 +13,8 @@ query($org: String!, $page: String) {
       }
     }
   }
-}`;
+}`
 
 module.exports = {
-    allEntriesQuery,
-};
+  allEntriesQuery
+}

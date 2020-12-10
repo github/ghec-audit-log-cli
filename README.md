@@ -76,6 +76,14 @@ This workflow:
 - Forwards those changes to a service
 - Commits the latest cursor for the next call 
 
+
+## Releases
+
+To create a new release of the `ghec-audit-log-cli`:
+- Create a new release [in the repository](https://github.com/github/ghec-audit-log-cli/releases/new) using [semantic versioning](https://semver.org/)
+- Add the changelog details for the version
+- Submit it as a draft until it's ready to be published
+
 ## How to use
 - Clone the *audit-log-cli* repository to your Organization
 - Set the **Action** to run on Cron

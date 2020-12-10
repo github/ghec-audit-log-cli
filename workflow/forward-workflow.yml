@@ -59,7 +59,7 @@ jobs:
       uses: EndBug/add-and-commit@v5
       with:
         author_name: Audit Log Integration
-        author_email: alwell-kevin@github.com
+        author_email: ${{ secrets.COMMITTER_EMAIL }}
         message: "Updating cursor for audit log"
         add: ".last-cursor-update"
       env:

@@ -91,6 +91,8 @@ You will need to create the following **Github Secrets** To allow the tool to wo
   - Name of the **GitHub** Organization to poll the audit log
 - **WEBHOOK_URL**
   - URL to a service where the generated *json* information is piped
+- **COMMITTER_EMAIL**
+  - Email address for one of the primary committers on the repository
 
 ### Notes
 - Modify the polling workflow to run on a cron, instead of push

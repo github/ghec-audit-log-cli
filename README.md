@@ -1,7 +1,7 @@
 # CLI for the Audit Log using GHEC
 
 This CLI made in node helps on querying the audit log. It can query the full
-audit providing all the data the API can serve, or, given a cursor, it can 
+audit providing all the data the API can serve, or, given a cursor, it can
 provide the newest entries from that specific moment.
 
 You can build an sh script on top of this one to store the data or query it.
@@ -21,6 +21,7 @@ Options:
   -p, --pretty             prints the json data in a readable format (default: false)
   -l, --limit              a maximum limit on the number of items retrieved
   -f, --file               the name of the file where you want to output the result
+  -a, --api                The version of API to call the GitHub, default v4, optional v3           
   -c, --cursor <string>    if provided, this cursor will be used to query the newest entries from the cursor provided. If not present,
                 the result will contain all the audit log from the org
   -h, --help               display help for command
@@ -28,7 +29,7 @@ Options:
 ```
 
 Optionally, you can create a file called `.ghec-audit-log` that supports
-the token and organization, and omit the parameters while running the script.
+the **token** and **organization**, and omit the parameters while running the script.
 
 ```yaml
 org: org-name
@@ -71,10 +72,10 @@ and integrate it with your favorite service.
 
 This workflow:
 - Runs periodically
-- Grabs any existing cursor as the last item grabbed from the log 
+- Grabs any existing cursor as the last item grabbed from the log
 - Grabs the latest changes from the audit log
 - Forwards those changes to a service
-- Commits the latest cursor for the next call 
+- Commits the latest cursor for the next call
 
 
 ## Releases
@@ -104,6 +105,8 @@ You will need to create the following **Github Secrets** To allow the tool to wo
 
 ### Notes
 - Modify the polling workflow to run on a cron, instead of push
+- The `Organization` **must** be a part of a **GitHub** Enterprise or the API calls will fail
+- The `Personal Access token` **must** be SSO enabled to query the GitHub Organization if it is enabled
 
 ## Disclaimer
 

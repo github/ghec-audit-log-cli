@@ -2,6 +2,7 @@
 const YAML = require('yaml')
 const fs = require('fs')
 const { graphql } = require('@octokit/graphql')
+const { octokit } = require('@octokit/rest')
 const { requestEntries } = require('./ghec-audit-log-client')
 const { validateInput } = require('./ghec-audit-log-utils')
 
@@ -28,7 +29,7 @@ try {
 }
 
 // TODO idea: maybe add support for other formats like PUTVAL to forward the data in an easier way
-const { cursor, pretty, limit, token, org, outputFile } = validateInput(program, config)
+const { cursor, pretty, limit, api, token, org, outputFile } = validateInput(program, config)
 
 /**
  * Function containing all the queries
@@ -37,7 +38,7 @@ async function queryAuditLog () {
   // Select the query to run
   let queryRunner
   if (cursor) {
-    if (api == 'v4') {
+    if (api === 'v4') {
       // API v4 call with cursor
       queryRunner = () => requestEntries(graphqlWithAuth, org, limit, cursor)
     } else {
@@ -45,7 +46,7 @@ async function queryAuditLog () {
       queryRunner = () => requestEntries(v3WithAuth, org, limit, cursor)
     }
   } else {
-    if (api == 'v4') {
+    if (api === 'v4') {
       // api v4 without cursor
       queryRunner = () => requestEntries(graphqlWithAuth, org, limit)
     } else {
@@ -68,7 +69,7 @@ async function queryAuditLog () {
 }
 
 // Execute the request and print the result
-const v3WithAuth = graphql.defaults({
+const v3WithAuth = octokit.defaults({
   headers: {
     authorization: `token ${token}`
   }
@@ -86,21 +87,21 @@ queryAuditLog()
     process.exit(1)
   })
 
-  // Execute the request and print the result
-  const graphqlWithAuth = graphql.defaults({
-    headers: {
-      authorization: `token ${token}`
+// Execute the request and print the result
+const graphqlWithAuth = graphql.defaults({
+  headers: {
+    authorization: `token ${token}`
+  }
+})
+queryAuditLog()
+  .then((data) => {
+    if (outputFile) {
+      fs.writeFileSync(outputFile, data)
+    } else {
+      console.log(data)
     }
   })
-  queryAuditLog()
-    .then((data) => {
-      if (outputFile) {
-        fs.writeFileSync(outputFile, data)
-      } else {
-        console.log(data)
-      }
-    })
-    .catch((err) => {
-      console.error(err)
-      process.exit(1)
-    })
+  .catch((err) => {
+    console.error(err)
+    process.exit(1)
+  })

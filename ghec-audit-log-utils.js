@@ -7,6 +7,7 @@ function validateInput (program, config) {
     cursor: program.cursor || null,
     pretty: program.pretty || false,
     limit: program.limit || null,
+    api: program.api || 'v4',
     token: program.token || config.token,
     org: program.org || config.org,
     outputFile: program.file

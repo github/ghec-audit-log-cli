@@ -1,3 +1,4 @@
+const hash = require('json-hash')
 const { allEntriesQuery } = require('./ghec-audit-log-queries')
 
 async function requestV4Entries (graphqlApi, org, limit, cursor) {
@@ -45,32 +46,60 @@ async function requestV4Entries (graphqlApi, org, limit, cursor) {
   return { data: entries, newestCursorId: firstPageCursorId }
 }
 
-async function requestV3Entries(octokit, org, limit, cursor) {
+// In this case we are not using the cursors from the header Link as identifies the page and the last element, but wouldn't
+// be reliable if pagination, limit and size changes. To avoid that we are using the findHashedEntry method and we are hashing
+// each of the elements separately so we can find them in a more reliable way
+async function requestV3Entries (octokit, org, limit, cursor, apiType) {
   let entries = []
   const hasLimit = limit || false
-  try {
-    for await (const response of octokit.paginate.iterator(`GET /orgs/{org}/audit-log?include=all&per_page=5&after=${cursor}`, {
-      org: org
-    })) {
-      console.log("link:", response.headers.link)
-      if (response.status === 200 || response.status === 201) {
-        entries.push(response.data)
-      } else {
-        console.log(`Could not retrieve page ${response.headers.link}`)
-      }
+  let foundCursor = false
+  let foundLimit = false
+  for await (const { data } of octokit.paginate.iterator(`GET /orgs/{org}/audit-log?include=${apiType}&per_page=${Math.min(100, limit)}`, {
+    org: org
+  })) {
+    let newEntries = data;
 
-      if (hasLimit) {
-        if (entries.length >= limit) {
-          entries = entries.slice(0, limit)
-        }
-        break;
+    //If we find the entry in the current request, we should add the remaining and stop
+    if (cursor != null) {
+      const index = findHashedEntry(cursor, data)
+      if (index !== -1) {
+        newEntries = data.slice(0, index)
+        foundCursor = true
       }
     }
-  } catch (error) {
-    console.log(error)
-    process.exit(1)
+
+    // Concat the previous entries and the new ones
+    entries = entries.concat(newEntries)
+
+    // Limit has been found
+    if (hasLimit) {
+      if (entries.length >= limit) {
+        entries = entries.slice(0, limit)
+      }
+      foundLimit = true
+    }
+
+    // Stop going through the iterator if either we reached limit or found the cursor
+    if(foundLimit || foundCursor) break
   }
-  return { data: entries, newestCursorId: null }
+
+  //Calculate the newest element that was provided
+  let lastCursor = null
+  if(entries.length > 0) {
+    lastCursor = generateHashAudit(entries[0])
+  }
+
+  // Provide the data
+  return { data: entries, newestCursorId: lastCursor }
+}
+
+function generateHashAudit(entry) {
+  const hashed = hash.digest(entry)
+  return Buffer.from(hashed).toString('base64')
+}
+
+function findHashedEntry(cursor, entries) {
+  return entries.findIndex((elem) => generateHashAudit(elem) === cursor)
 }
 
 module.exports = {

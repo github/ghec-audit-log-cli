@@ -54,13 +54,13 @@ async function queryAuditLog () {
       const octokit = new Octo({
         auth: token,
         throttle: {
-          onRateLimit: (retryAfter, options) => {
+          onRateLimit: (retryAfter, _) => {
             octokit.log.warn(
               `[${new Date().toISOString()}] ${program} Request quota exhausted for request, will retry in ${retryAfter}`
             )
             return true
           },
-          onAbuseLimit: (retryAfter, options) => {
+          onAbuseLimit: (retryAfter, _) => {
             octokit.log.warn(
               `[${new Date().toISOString()}] ${program} Abuse detected for request, will retry in ${retryAfter}`
             )
@@ -68,7 +68,7 @@ async function queryAuditLog () {
           }
         }
       })
-      queryRunner = () => requestV3Entries(octokit, org, limit, cursor || null)
+      queryRunner = () => requestV3Entries(octokit, org, limit, cursor || null, apiType)
       break;
   }
 
@@ -78,7 +78,10 @@ async function queryAuditLog () {
   // Run the query and store the most recent cursor
   const { data, newestCursorId } = await queryRunner()
   const entries = data
-  if (newestCursorId) fs.writeFileSync(`.last-${api === 'v3' ? 'v3-': '-'}cursor-update`, newestCursorId)
+  if (newestCursorId) {
+    const cursorFileName = `.last-${api === 'v3' ? 'v3-': '-'}cursor-update`
+    fs.writeFileSync(cursorFileName, newestCursorId)
+  }
 
   // Return the data
   if (pretty === true) {

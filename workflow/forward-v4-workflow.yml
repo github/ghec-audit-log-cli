@@ -1,0 +1,66 @@
+############################################
+# Github Action Workflow to poll and aggregate logs #
+############################################
+name: POLL/POST Audit Log Data from V4 API
+
+##############################################
+# Run once an hour and when pushed to main #
+##############################################
+on:
+  push:
+    branches: main
+  schedule:
+    - cron: '59 * * * *'
+
+#################
+# Build the job #
+#################
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+    # Clone source code
+    - name: Checkout source code
+      uses: actions/checkout@v2
+
+    # Install congiure NodeJS
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    # Configure the cursor endpoint
+    - name: Export Cursor
+      run: export LAST_CURSOR=$(cat .last-cursor-update)
+
+    # Need to install NPM
+    - name: NPM Install
+      run: npm install
+
+      # If this is the first time we poll, then do a fresh poll. If not, poll from latest cursor.
+    - name: Poll from Cursor
+      run: |
+        if [ -z "$LAST_CURSOR" ]; then
+          echo "FIRST TIME RUNNING AUDIT LOG POLL"
+          npm start -- --token ${{secrets.AUDIT_LOG_TOKEN}} --org ${{secrets.ORG_NAME}} --file 'audit-log-output.json'
+        else
+          echo "RUNNING AUDIT LOG POLL FROM $LAST_CURSOR"
+          npm start -- --token ${{secrets.AUDIT_LOG_TOKEN}} --org ${{secrets.ORG_NAME}} --cursor $LAST_CURSOR --file 'audit-log-output.json'
+        fi
+        curl -X POST -H "Content-Type: application/json" -d @audit-log-output.json ${{secrets.WEBHOOK_URL}}
+
+    # Commit the cursor back to source
+    - name: Commit cursor
+      uses: EndBug/add-and-commit@v5
+      with:
+        author_name: Audit Log Integration
+        author_email: ${{ secrets.COMMITTER_EMAIL }}
+        message: "Updating cursor for audit log"
+        add: ".last-cursor-update"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

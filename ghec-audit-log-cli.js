@@ -34,6 +34,36 @@ try {
 // TODO idea: maybe add support for other formats like PUTVAL to forward the data in an easier way
 const { cursor, pretty, limit, api, apiType, token, org, outputFile } = validateInput(program, config)
 
+function buildV3Octokit () {
+  const Octo = Octokit.plugin(retry, throttling)
+  const octokit = new Octo({
+    auth: token,
+    throttle: {
+      onRateLimit: (retryAfter, _) => {
+        octokit.log.warn(
+          `[${new Date().toISOString()}] ${program} Request quota exhausted for request, will retry in ${retryAfter}`
+        )
+        return true
+      },
+      onAbuseLimit: (retryAfter, _) => {
+        octokit.log.warn(
+          `[${new Date().toISOString()}] ${program} Abuse detected for request, will retry in ${retryAfter}`
+        )
+        return true
+      }
+    }
+  })
+  return octokit
+}
+
+function buildGraphQLOctokit () {
+  return graphql.defaults({
+    headers: {
+      authorization: `token ${token}`
+    }
+  })
+}
+
 /**
  * Function containing the GitHub API v4 Graphql calls for the audit log
  */
@@ -42,44 +72,21 @@ async function queryAuditLog () {
   let queryRunner
   switch (api) {
     case 'v4': // API v4 call with cursor
-      const graphqlWithAuth = graphql.defaults({
-        headers: {
-          authorization: `token ${token}`
-        }
-      })
-      queryRunner = () => requestV4Entries(graphqlWithAuth, org, limit, cursor || null)
-      break;
+      queryRunner = () => requestV4Entries(buildGraphQLOctokit(), org, limit, cursor || null)
+      break
     case 'v3': // API v3 call with cursor
-      const Octo = Octokit.plugin(retry, throttling)
-      const octokit = new Octo({
-        auth: token,
-        throttle: {
-          onRateLimit: (retryAfter, _) => {
-            octokit.log.warn(
-              `[${new Date().toISOString()}] ${program} Request quota exhausted for request, will retry in ${retryAfter}`
-            )
-            return true
-          },
-          onAbuseLimit: (retryAfter, _) => {
-            octokit.log.warn(
-              `[${new Date().toISOString()}] ${program} Abuse detected for request, will retry in ${retryAfter}`
-            )
-            return true
-          }
-        }
-      })
-      queryRunner = () => requestV3Entries(octokit, org, limit, cursor || null, apiType)
-      break;
+      queryRunner = () => requestV3Entries(buildV3Octokit(), org, limit, cursor || null, apiType)
+      break
   }
 
   // Sanity check the switch
-  if(!queryRunner) return []
+  if (!queryRunner) return []
 
   // Run the query and store the most recent cursor
   const { data, newestCursorId } = await queryRunner()
   const entries = data
   if (newestCursorId) {
-    const cursorFileName = `.last-${api === 'v3' ? 'v3-': '-'}cursor-update`
+    const cursorFileName = `.last-${api === 'v3' ? 'v3-' : '-'}cursor-update`
     fs.writeFileSync(cursorFileName, newestCursorId)
   }
 

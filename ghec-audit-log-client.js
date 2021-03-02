@@ -57,9 +57,9 @@ async function requestV3Entries (octokit, org, limit, cursor, apiType) {
   for await (const { data } of octokit.paginate.iterator(`GET /orgs/{org}/audit-log?include=${apiType}&per_page=${Math.min(100, limit)}`, {
     org: org
   })) {
-    let newEntries = data;
+    let newEntries = data
 
-    //If we find the entry in the current request, we should add the remaining and stop
+    // If we find the entry in the current request, we should add the remaining and stop
     if (cursor != null) {
       const index = findHashedEntry(cursor, data)
       if (index !== -1) {
@@ -80,12 +80,12 @@ async function requestV3Entries (octokit, org, limit, cursor, apiType) {
     }
 
     // Stop going through the iterator if either we reached limit or found the cursor
-    if(foundLimit || foundCursor) break
+    if (foundLimit || foundCursor) break
   }
 
-  //Calculate the newest element that was provided
+  // Calculate the newest element that was provided
   let lastCursor = null
-  if(entries.length > 0) {
+  if (entries.length > 0) {
     lastCursor = generateHashAudit(entries[0])
   }
 
@@ -93,16 +93,16 @@ async function requestV3Entries (octokit, org, limit, cursor, apiType) {
   return { data: entries, newestCursorId: lastCursor }
 }
 
-function generateHashAudit(entry) {
+function generateHashAudit (entry) {
   const hashed = hash.digest(entry)
   return Buffer.from(hashed).toString('base64')
 }
 
-function findHashedEntry(cursor, entries) {
+function findHashedEntry (cursor, entries) {
   return entries.findIndex((elem) => generateHashAudit(elem) === cursor)
 }
 
 module.exports = {
   requestV4Entries,
-  requestV3Entries,
+  requestV3Entries
 }

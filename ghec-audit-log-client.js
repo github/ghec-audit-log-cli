@@ -45,9 +45,31 @@ async function requestV4Entries (graphqlApi, org, limit, cursor) {
   return { data: entries, newestCursorId: firstPageCursorId }
 }
 
-function requestV3Entries(v3Api, org, limit, cursor) {
+async function requestV3Entries(octokit, org, limit, cursor) {
   let entries = []
+  const hasLimit = limit || false
+  try {
+    for await (const response of octokit.paginate.iterator(`GET /orgs/{org}/audit-log?include=all&per_page=5&after=${cursor}`, {
+      org: org
+    })) {
+      console.log("link:", response.headers.link)
+      if (response.status === 200 || response.status === 201) {
+        entries.push(response.data)
+      } else {
+        console.log(`Could not retrieve page ${response.headers.link}`)
+      }
 
+      if (hasLimit) {
+        if (entries.length >= limit) {
+          entries = entries.slice(0, limit)
+        }
+        break;
+      }
+    }
+  } catch (error) {
+    console.log(error)
+    process.exit(1)
+  }
   return { data: entries, newestCursorId: null }
 }
 

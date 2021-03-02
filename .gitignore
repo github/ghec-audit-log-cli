@@ -1,5 +1,6 @@
 .ghec-audit-log
 .last-cursor-update
+.last-v3-cursor-update
 
 # Created by https://www.gitignore.io/api/node
 # Edit at https://www.gitignore.io/?templates=node

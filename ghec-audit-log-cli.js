@@ -4,6 +4,8 @@ const fs = require('fs')
 const { graphql } = require('@octokit/graphql')
 const { Octokit } = require('@octokit/rest')
 const { requestV4Entries, requestV3Entries } = require('./ghec-audit-log-client')
+const { retry } = require('@octokit/plugin-retry')
+const { throttling } = require('@octokit/plugin-throttling')
 const { validateInput } = require('./ghec-audit-log-utils')
 
 // Obtain configuration
@@ -33,7 +35,7 @@ try {
 const { cursor, pretty, limit, api, apiType, token, org, outputFile } = validateInput(program, config)
 
 /**
- * Function containing all the queries
+ * Function containing the GitHub API v4 Graphql calls for the audit log
  */
 async function queryAuditLog () {
   // Select the query to run
@@ -48,19 +50,35 @@ async function queryAuditLog () {
       queryRunner = () => requestV4Entries(graphqlWithAuth, org, limit, cursor || null)
       break;
     case 'v3': // API v3 call with cursor
-      const v3WithAuth = Octokit.defaults({
-        headers: {
-          authorization: `token ${token}`
+      const Octo = Octokit.plugin(retry, throttling)
+      const octokit = new Octo({
+        auth: token,
+        throttle: {
+          onRateLimit: (retryAfter, options) => {
+            octokit.log.warn(
+              `[${new Date().toISOString()}] ${program} Request quota exhausted for request, will retry in ${retryAfter}`
+            )
+            return true
+          },
+          onAbuseLimit: (retryAfter, options) => {
+            octokit.log.warn(
+              `[${new Date().toISOString()}] ${program} Abuse detected for request, will retry in ${retryAfter}`
+            )
+            return true
+          }
         }
       })
-      queryRunner = () => requestV3Entries(v3WithAuth, org, limit, cursor || null)
+      queryRunner = () => requestV3Entries(octokit, org, limit, cursor || null)
       break;
   }
+
+  // Sanity check the switch
+  if(!queryRunner) return []
 
   // Run the query and store the most recent cursor
   const { data, newestCursorId } = await queryRunner()
   const entries = data
-  if (newestCursorId) fs.writeFileSync('.last-cursor-update', newestCursorId)
+  if (newestCursorId) fs.writeFileSync(`.last-${api === 'v3' ? 'v3-': '-'}cursor-update`, newestCursorId)
 
   // Return the data
   if (pretty === true) {
@@ -70,7 +88,9 @@ async function queryAuditLog () {
   }
 }
 
-// Execute the request and print the result
+/*
+* Logic to see if we need to run the API v3 vs API v4
+*/
 queryAuditLog()
   .then((data) => {
     if (outputFile) {

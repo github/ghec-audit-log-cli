@@ -1,6 +1,6 @@
 const { allEntriesQuery } = require('./ghec-audit-log-queries')
 
-async function requestEntries (requestExecutor, org, limit, cursor) {
+async function requestV4Entries (graphqlApi, org, limit, cursor) {
   let entries = []
   const variables = {
     org: org,
@@ -13,7 +13,7 @@ async function requestEntries (requestExecutor, org, limit, cursor) {
   const hasLimit = limit || false
   let limitReached = false
   while (hasNextPage && !foundCursor && !limitReached) {
-    const data = await requestExecutor(allEntriesQuery, variables)
+    const data = await graphqlApi(allEntriesQuery, variables)
     let newEntries = data.organization.auditLog.nodes
 
     // Cursor check
@@ -45,6 +45,13 @@ async function requestEntries (requestExecutor, org, limit, cursor) {
   return { data: entries, newestCursorId: firstPageCursorId }
 }
 
+function requestV3Entries(v3Api, org, limit, cursor) {
+  let entries = []
+
+  return { data: entries, newestCursorId: null }
+}
+
 module.exports = {
-  requestEntries
+  requestV4Entries,
+  requestV3Entries,
 }

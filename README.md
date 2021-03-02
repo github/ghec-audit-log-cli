@@ -14,17 +14,17 @@ This script can take the following arguments:
 Usage: audit-log-ghec-cli [options]
 
 Options:
-  -v, --version            Output the current version
-  -t, --token <string>     the token to access the API (mandatory)
-  -o, --org <string>       the organization we want to extract the audit log from
-  -cfg, --config <string>  location for the config yaml file. Default ".ghec-audit-log" (default: "./.ghec-audit-log")
-  -p, --pretty             prints the json data in a readable format (default: false)
-  -l, --limit              a maximum limit on the number of items retrieved
-  -f, --file               the name of the file where you want to output the result
-  -a, --api                The version of API to call the GitHub, default v4, optional v3           
-  -c, --cursor <string>    if provided, this cursor will be used to query the newest entries from the cursor provided. If not present,
-                the result will contain all the audit log from the org
-  -h, --help               display help for command
+  -v, --version             Output the current version
+  -t, --token <string>      the token to access the API (mandatory)
+  -o, --org <string>        the organization we want to extract the audit log from
+  -cfg, --config <string>   location for the config yaml file. Default ".ghec-audit-log" (default: "./.ghec-audit-log")
+  -p, --pretty              prints the json data in a readable format (default: false)
+  -l, --limit <number>      a maximum limit on the number of items retrieved
+  -f, --file <string>       the output file where the result should be printed
+  -a, --api <string>        the version of GitHub API to call (default: "v4")
+  -at, --api-type <string>  Only if -a is v3. API type to bring, either all, web or git (default: "all")
+  -c, --cursor <string>     if provided, this cursor will be used to query the newest entries from the cursor provided. If not present, the result will contain all the audit log from the org
+  -h, --help                display help for command
 
 ```
 

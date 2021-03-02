@@ -8,6 +8,7 @@ function validateInput (program, config) {
     pretty: program.pretty || false,
     limit: program.limit || null,
     api: program.api || 'v4',
+    apiType: program.apiType || 'all',
     token: program.token || config.token,
     org: program.org || config.org,
     outputFile: program.file
@@ -41,6 +42,22 @@ function validateInput (program, config) {
         is: 40
       },
       format: alphanumericRegex
+    },
+    api: {
+      type: 'string',
+      presence: { allowEmpty: false },
+      length: {
+        is: 2
+      },
+      inclusion: ['v3', 'v4']
+    },
+    apiType: {
+      type: 'string',
+      presence: { allowEmpty: false },
+      length: {
+        is: 3
+      },
+      inclusion: ['all', 'git', 'web']
     },
     org: {
       type: 'string',

@@ -2,7 +2,9 @@
 const YAML = require('yaml')
 const fs = require('fs')
 const { graphql } = require('@octokit/graphql')
-const { octokit } = require('@octokit/rest')
+const { Octokit } = require('@octokit/rest')
+const { retry } = require('@octokit/plugin-retry')
+const { throttling } = require('@octokit/plugin-throttling')
 const { requestEntries } = require('./ghec-audit-log-client')
 const { validateInput } = require('./ghec-audit-log-utils')
 
@@ -32,27 +34,22 @@ try {
 const { cursor, pretty, limit, api, token, org, outputFile } = validateInput(program, config)
 
 /**
- * Function containing all the queries
+ * Function containing the GitHub API v4 Graphql calls for the audit log
  */
 async function queryAuditLog () {
+  const graphqlWithAuth = graphql.defaults({
+    headers: {
+      authorization: `token ${token}`
+    }
+  })
   // Select the query to run
   let queryRunner
   if (cursor) {
-    if (api === 'v4') {
-      // API v4 call with cursor
-      queryRunner = () => requestEntries(graphqlWithAuth, org, limit, cursor)
-    } else {
-      // API v3 call with cursor
-      queryRunner = () => requestEntries(v3WithAuth, org, limit, cursor)
-    }
+    // API v4 call with cursor
+    queryRunner = () => requestEntries(graphqlWithAuth, org, limit, cursor)
   } else {
-    if (api === 'v4') {
-      // api v4 without cursor
-      queryRunner = () => requestEntries(graphqlWithAuth, org, limit)
-    } else {
-      // API v3 without cursor
-      queryRunner = () => requestEntries(v3WithAuth, org, limit)
-    }
+    // api v4 without cursor
+    queryRunner = () => requestEntries(graphqlWithAuth, org, limit)
   }
 
   // Run the query and store the most recent cursor
@@ -68,31 +65,51 @@ async function queryAuditLog () {
   }
 }
 
-// Execute the request and print the result
-const v3WithAuth = octokit.defaults({
-  headers: {
-    authorization: `token ${token}`
-  }
-})
-queryAuditLog()
-  .then((data) => {
-    if (outputFile) {
-      fs.writeFileSync(outputFile, data)
-    } else {
-      console.log(data)
+/*
+* Function containing the GitHub v3 query for the audit-log
+*/
+async function apiV3Call (outputFile) {
+  const Octo = Octokit.plugin(retry, throttling)
+  const octokit = new Octo({
+    auth: token,
+    throttle: {
+      onRateLimit: (retryAfter, options) => {
+        octokit.log.warn(
+          `[${new Date().toISOString()}] ${program} Request quota exhausted for request, will retry in ${retryAfter}`
+        )
+        return true
+      },
+      onAbuseLimit: (retryAfter, options) => {
+        octokit.log.warn(
+          `[${new Date().toISOString()}] ${program} Abuse detected for request, will retry in ${retryAfter}`
+        )
+        return true
+      }
     }
   })
-  .catch((err) => {
-    console.error(err)
-    process.exit(1)
-  })
+  try {
+      for await (const response of octokit.paginate.iterator(`GET /orgs/{org}/audit-log?include=all&per_page=5&after=${cursor}`, {
+        org: org
+      })) {
+        console.log("link:", response.headers.link)
+        if (response.status === 200 || response.status === 201) {
+            fs.appendFileSync(outputFile, JSON.stringify(response.data), function (err) {
+              if (err) return console.log(err)
+            })
+          }
+        }
+      } catch (error) {
+        console.log(error)
+        process.exit(1)
+    }
+  }
 
+/*
+* Logic to see if we need to run the API v3 vs API v4
+*/
+if (api === 'v4') {
 // Execute the request and print the result
-const graphqlWithAuth = graphql.defaults({
-  headers: {
-    authorization: `token ${token}`
-  }
-})
+
 queryAuditLog()
   .then((data) => {
     if (outputFile) {
@@ -105,3 +122,7 @@ queryAuditLog()
     console.error(err)
     process.exit(1)
   })
+} else {
+  // API v3 call
+  apiV3Call(outputFile)
+}

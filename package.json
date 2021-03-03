@@ -1,7 +1,7 @@
 {
   "name": "ghec-audit-log-cli",
-  "version": "1.0.0",
-  "description": "",
+  "version": "2.0.0",
+  "description": "Audit Log CLI for Rest and GraphQL APIs",
   "main": "ghec-audit-log-cli.js",
   "scripts": {
     "start": "node ghec-audit-log-cli",

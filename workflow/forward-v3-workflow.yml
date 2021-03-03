@@ -1,7 +1,7 @@
 ############################################
 # Github Action Workflow to poll and aggregate logs #
 ############################################
-name: POLL/POST Audit Log Data
+name: POLL/POST Audit Log Data from v3 API
 
 ##############################################
 # Run once an hour and when pushed to main #
@@ -36,7 +36,7 @@ jobs:
 
     # Configure the cursor endpoint
     - name: Export Cursor
-      run: export LAST_CURSOR=$(cat .last-cursor-update)
+      run: export LAST_CURSOR=$(cat .last-v3-cursor-update)
 
     # Need to install NPM
     - name: NPM Install
@@ -47,10 +47,10 @@ jobs:
       run: |
         if [ -z "$LAST_CURSOR" ]; then
           echo "FIRST TIME RUNNING AUDIT LOG POLL"
-          npm start -- --token ${{secrets.AUDIT_LOG_TOKEN}} --org ${{secrets.ORG_NAME}} --file 'audit-log-output.json'
+          npm start -- --token ${{secrets.AUDIT_LOG_TOKEN}} --org ${{secrets.ORG_NAME}} --api 'v3' --api-type 'all' --file 'audit-log-output.json'
         else
           echo "RUNNING AUDIT LOG POLL FROM $LAST_CURSOR"
-          npm start -- --token ${{secrets.AUDIT_LOG_TOKEN}} --org ${{secrets.ORG_NAME}} --cursor $LAST_CURSOR --file 'audit-log-output.json'
+          npm start -- --token ${{secrets.AUDIT_LOG_TOKEN}} --org ${{secrets.ORG_NAME}} --api 'v3' --api-type 'all' --cursor $LAST_CURSOR --file 'audit-log-output.json'
         fi
         curl -X POST -H "Content-Type: application/json" -d @audit-log-output.json ${{secrets.WEBHOOK_URL}}
 
@@ -61,6 +61,6 @@ jobs:
         author_name: Audit Log Integration
         author_email: ${{ secrets.COMMITTER_EMAIL }}
         message: "Updating cursor for audit log"
-        add: ".last-cursor-update"
+        add: ".last-v3-cursor-update"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

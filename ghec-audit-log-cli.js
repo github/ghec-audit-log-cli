@@ -2,7 +2,10 @@
 const YAML = require('yaml')
 const fs = require('fs')
 const { graphql } = require('@octokit/graphql')
-const { requestEntries } = require('./ghec-audit-log-client')
+const { Octokit } = require('@octokit/rest')
+const { requestV4Entries, requestV3Entries } = require('./ghec-audit-log-client')
+const { retry } = require('@octokit/plugin-retry')
+const { throttling } = require('@octokit/plugin-throttling')
 const { validateInput } = require('./ghec-audit-log-utils')
 
 // Obtain configuration
@@ -14,6 +17,8 @@ program.version('1.0.0', '-v, --version', 'Output the current version')
   .option('-p, --pretty', 'prints the json data in a readable format', false)
   .option('-l, --limit <number>', 'a maximum limit on the number of items retrieved')
   .option('-f, --file <string>', 'the output file where the result should be printed')
+  .option('-a, --api <string>', 'the version of GitHub API to call', 'v4')
+  .option('-at, --api-type <string>', 'Only if -a is v3. API type to bring, either all, web or git', 'all')
   .option('-c, --cursor <string>', 'if provided, this cursor will be used to query the newest entries from the cursor provided. If not present, the result will contain all the audit log from the org')
 
 program.parse(process.argv)
@@ -27,24 +32,63 @@ try {
 }
 
 // TODO idea: maybe add support for other formats like PUTVAL to forward the data in an easier way
-const { cursor, pretty, limit, token, org, outputFile } = validateInput(program, config)
+const { cursor, pretty, limit, api, apiType, token, org, outputFile } = validateInput(program, config)
+
+function buildV3Octokit () {
+  const Octo = Octokit.plugin(retry, throttling)
+  const octokit = new Octo({
+    auth: token,
+    throttle: {
+      onRateLimit: (retryAfter, _) => {
+        octokit.log.warn(
+          `[${new Date().toISOString()}] ${program} Request quota exhausted for request, will retry in ${retryAfter}`
+        )
+        return true
+      },
+      onAbuseLimit: (retryAfter, _) => {
+        octokit.log.warn(
+          `[${new Date().toISOString()}] ${program} Abuse detected for request, will retry in ${retryAfter}`
+        )
+        return true
+      }
+    }
+  })
+  return octokit
+}
+
+function buildGraphQLOctokit () {
+  return graphql.defaults({
+    headers: {
+      authorization: `token ${token}`
+    }
+  })
+}
 
 /**
- * Function containing all the queries
+ * Function containing the GitHub API v4 Graphql calls for the audit log
  */
 async function queryAuditLog () {
   // Select the query to run
   let queryRunner
-  if (cursor) {
-    queryRunner = () => requestEntries(graphqlWithAuth, org, limit, cursor)
-  } else {
-    queryRunner = () => requestEntries(graphqlWithAuth, org, limit)
+  switch (api) {
+    case 'v4': // API v4 call with cursor
+      queryRunner = () => requestV4Entries(buildGraphQLOctokit(), org, limit, cursor || null)
+      break
+    case 'v3': // API v3 call with cursor
+      queryRunner = () => requestV3Entries(buildV3Octokit(), org, limit, cursor || null, apiType)
+      break
   }
+
+  // Sanity check the switch
+  if (!queryRunner) return []
 
   // Run the query and store the most recent cursor
   const { data, newestCursorId } = await queryRunner()
   const entries = data
-  if (newestCursorId) fs.writeFileSync('.last-cursor-update', newestCursorId)
+  if (newestCursorId) {
+    const cursorFileName = `.last${api === 'v3' ? '-v3-' : '-'}cursor-update`
+    fs.writeFileSync(cursorFileName, newestCursorId)
+  }
 
   // Return the data
   if (pretty === true) {
@@ -54,12 +98,9 @@ async function queryAuditLog () {
   }
 }
 
-// Execute the request and print the result
-const graphqlWithAuth = graphql.defaults({
-  headers: {
-    authorization: `token ${token}`
-  }
-})
+/*
+* Logic to see if we need to run the API v3 vs API v4
+*/
 queryAuditLog()
   .then((data) => {
     if (outputFile) {

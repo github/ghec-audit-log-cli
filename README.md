@@ -67,7 +67,7 @@ $ ghec-audit-log-cli -v
 ## Forwarding the log using GitHub Actions
 
 One of the most common uses of the CLI is to forward the log using GitHub actions. You can
-use as an starter workflow the [one provided in this repository](workflows/node-workflow.yml)
+use as an starter workflow the ones provided in this repository for [v3](workflows/forward-v3-workflow.yml) or [v4](workflows/forward-v4-workflow.yml)
 and integrate it with your favorite service.
 
 This workflow:

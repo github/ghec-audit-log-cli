@@ -22,11 +22,16 @@
       "name": "Javier de Pedro López",
       "email": "droidpl@github.com",
       "url": "https://github.com/droidpl"
+    },
+    {
+      "name": "Froilán Irizarry Rivera",
+      "email": "froi@github.com",
+      "url": "https://github.com/froi"
     }
   ],
   "license": "MIT",
   "dependencies": {
-    "@octokit/graphql": "^4.3.1",
+    "@octokit/plugin-enterprise-cloud": "^5.0.4",
     "@octokit/plugin-retry": "*",
     "@octokit/plugin-throttling": "^3.3.1",
     "@octokit/rest": "^18.3.1",

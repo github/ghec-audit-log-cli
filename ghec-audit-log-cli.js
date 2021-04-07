@@ -1,8 +1,8 @@
 #! /usr/bin/env node
 const YAML = require('yaml')
 const fs = require('fs')
-const { graphql } = require('@octokit/graphql')
 const { Octokit } = require('@octokit/rest')
+const { enterpriseCloud } = require('@octokit/plugin-enterprise-cloud')
 const { requestV4Entries, requestV3Entries } = require('./ghec-audit-log-client')
 const { retry } = require('@octokit/plugin-retry')
 const { throttling } = require('@octokit/plugin-throttling')
@@ -20,7 +20,9 @@ program.version('1.0.0', '-v, --version', 'Output the current version')
   .option('-a, --api <string>', 'the version of GitHub API to call', 'v4')
   .option('-at, --api-type <string>', 'Only if -a is v3. API type to bring, either all, web or git', 'all')
   .option('-c, --cursor <string>', 'if provided, this cursor will be used to query the newest entries from the cursor provided. If not present, the result will contain all the audit log from the org')
-
+  .option('-s, --source <string>', 'the source of the audit log. The source can ' +
+    'be either a GitHub Enterprise or a GitHub Enterprise Organization. ' +
+    'Accepts the following values: org | enterprise. Defaults to org', 'org')
 program.parse(process.argv)
 
 const configLocation = program.cfg || './.ghec-audit-log'
@@ -32,11 +34,13 @@ try {
 }
 
 // TODO idea: maybe add support for other formats like PUTVAL to forward the data in an easier way
-const { cursor, pretty, limit, api, apiType, token, org, outputFile } = validateInput(program, config)
+const { cursor, pretty, limit, api, apiType, token, org, outputFile, source } = validateInput(program, config)
 
-function buildV3Octokit () {
+function buildGitHubClient () {
   const Octo = Octokit.plugin(retry, throttling)
-  const octokit = new Octo({
+  const enterpiseOcto = Octo.plugin(enterpriseCloud)
+
+  const octokit = new enterpiseOcto({
     auth: token,
     throttle: {
       onRateLimit: (retryAfter, _) => {
@@ -56,26 +60,19 @@ function buildV3Octokit () {
   return octokit
 }
 
-function buildGraphQLOctokit () {
-  return graphql.defaults({
-    headers: {
-      authorization: `token ${token}`
-    }
-  })
-}
-
 /**
  * Function containing the GitHub API v4 Graphql calls for the audit log
  */
 async function queryAuditLog () {
   // Select the query to run
   let queryRunner
+  const github = buildGitHubClient()
   switch (api) {
     case 'v4': // API v4 call with cursor
-      queryRunner = () => requestV4Entries(buildGraphQLOctokit(), org, limit, cursor || null)
+      queryRunner = () => requestV4Entries(github, org, limit, cursor || null)
       break
     case 'v3': // API v3 call with cursor
-      queryRunner = () => requestV3Entries(buildV3Octokit(), org, limit, cursor || null, apiType)
+      queryRunner = () => requestV3Entries(github, org, limit, cursor || null, apiType, source)
       break
   }
 

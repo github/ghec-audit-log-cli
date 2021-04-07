@@ -1,7 +1,7 @@
 const hash = require('json-hash')
 const { allEntriesQuery } = require('./ghec-audit-log-queries')
 
-async function requestV4Entries (graphqlApi, org, limit, cursor) {
+async function requestV4Entries (octokit, org, limit, cursor) {
   let entries = []
   const variables = {
     org: org,
@@ -14,7 +14,7 @@ async function requestV4Entries (graphqlApi, org, limit, cursor) {
   const hasLimit = limit || false
   let limitReached = false
   while (hasNextPage && !foundCursor && !limitReached) {
-    const data = await graphqlApi(allEntriesQuery, variables)
+    const data = await octokit.graphql(allEntriesQuery, variables)
     let newEntries = data.organization.auditLog.nodes
 
     // Cursor check
@@ -49,14 +49,25 @@ async function requestV4Entries (graphqlApi, org, limit, cursor) {
 // In this case we are not using the cursors from the header Link as identifies the page and the last element, but wouldn't
 // be reliable if pagination, limit and size changes. To avoid that we are using the findHashedEntry method and we are hashing
 // each of the elements separately so we can find them in a more reliable way
-async function requestV3Entries (octokit, org, limit, cursor, apiType) {
+async function requestV3Entries (octokit, entity, limit, cursor, apiType, auditLogSource='org') {
   let entries = []
   const hasLimit = limit || false
   let foundCursor = false
   let foundLimit = false
-  for await (const { data } of octokit.paginate.iterator(`GET /orgs/{org}/audit-log?include=${apiType}&per_page=${Math.min(100, limit)}`, {
-    org: org
-  })) {
+  let endpoint = ''
+  let options = {}
+
+  // Hardcoded org endpoints. We need to add the enterprise endpoints
+  switch(auditLogSource) {
+    case 'enterprise':
+      endpoint = '/enterprises/{enterprise}/audit-log'
+      options = { enterprise: entity }
+      break
+    default:
+      endpoint = '/orgs/{org}/audit-log'
+      options = { org: entity }
+  }
+  for await (const { data } of octokit.paginate.iterator(`GET ${endpoint}?include=${apiType}&per_page=${Math.min(100, limit)}`, options)) {
     let newEntries = data
 
     // If we find the entry in the current request, we should add the remaining and stop

@@ -38,9 +38,9 @@ const { cursor, pretty, limit, api, apiType, token, org, outputFile, source } = 
 
 function buildGitHubClient () {
   const Octo = Octokit.plugin(retry, throttling)
-  const enterpiseOcto = Octo.plugin(enterpriseCloud)
+  const EnterpiseOcto = Octo.plugin(enterpriseCloud)
 
-  const octokit = new enterpiseOcto({
+  const octokit = new EnterpiseOcto({
     auth: token,
     throttle: {
       onRateLimit: (retryAfter, _) => {

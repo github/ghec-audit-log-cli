@@ -75,7 +75,8 @@ function validateInput (program, config) {
     },
     source: {
       type: 'string',
-      presence: false
+      presence: { allowEmpty: false },
+      inclusion: ['org', 'enterprise']
     }
   }
 

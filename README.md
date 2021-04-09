@@ -39,6 +39,17 @@ org: org-name
 token: xxxxxxxxxxxxxxxx
 ```
 
+### About tokens and scopes
+
+To use this CLI you will need to use a [personal access token (PAT)](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) with the correct scopes. The scopes will change depending on what source you are going to use to export the audit logs.
+
+Endpoint source | Needed scopes
+--------------- | -------------
+Organization    | `read:org`
+Enterprise      | `admin:enterprise`
+
+If you are running this utility against a GHEC account, we recommend that you create your PAT with both scopes.
+
 ## Running the CLI
 
 Execute the command using node or npm.

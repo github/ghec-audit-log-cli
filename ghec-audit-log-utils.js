@@ -11,7 +11,8 @@ function validateInput (program, config) {
     apiType: program.apiType || 'all',
     token: program.token || config.token,
     org: program.org || config.org,
-    outputFile: program.file
+    outputFile: program.file,
+    source: program.source || 'org'
   }
 
   // Validate correctness
@@ -71,6 +72,11 @@ function validateInput (program, config) {
     outputFile: {
       type: 'string',
       presence: false
+    },
+    source: {
+      type: 'string',
+      presence: { allowEmpty: false },
+      inclusion: ['org', 'enterprise']
     }
   }
 

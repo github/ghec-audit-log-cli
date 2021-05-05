@@ -17,7 +17,7 @@ function validateInput (program, config) {
 
   // Validate correctness
   const tokenRegex = /^[g(p|o|u|s|r)1_]{0,1}[A-Za-z0-9_]+$/
-  const base64Regex = '(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})'
+  const base64Regex = '(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?'
   const orgRegex = /^[a-z\d]+(?:-?[a-z\d]+)*$/i
   const constraints = {
     cursor: {

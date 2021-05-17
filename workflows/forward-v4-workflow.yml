@@ -61,6 +61,6 @@ jobs:
         author_name: Audit Log Integration
         author_email: ${{ secrets.COMMITTER_EMAIL }}
         message: "Updating cursor for audit log"
-        add: ".last-cursor-update"
+        add: ".last-cursor-update --force"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

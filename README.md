@@ -71,7 +71,7 @@ $ node audit-log-ghec-cli --pretty
 Optionally you can install the script as a CLI and run it from the command line. To install it run:
 
 ```shell script
-$ git clone https://github.com/droidpl/ghec-audit-log-cli
+$ git clone https://github.com/github/ghec-audit-log-cli
 $ cd ghec-audit-log-cli
 $ npm link
 ```

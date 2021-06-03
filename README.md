@@ -63,7 +63,7 @@ $ npm run start -- --pretty
 ### node
 
 ```shell script
-$ node audit-log-ghec-cli --pretty
+$ node ghec-audit-log-cli --pretty
 ```
 
 ## Installing as CLI

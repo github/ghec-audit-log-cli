@@ -52,13 +52,16 @@ If you are running this utility against a GHEC account, we recommend that you cr
 
 ## Running the CLI
 
-Execute the command using node or npm. Before to execute, run `npm install` to install dependencies.
+Execute the command using node or npm
+
+### Pre-requisites
+
+ Install the node dependencies:
 
 ```shell script
 $ git clone https://github.com/github/ghec-audit-log-cli
 $ cd ghec-audit-log-cli
 $ npm install
-```
 
 ### npm
 

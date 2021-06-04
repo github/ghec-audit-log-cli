@@ -62,6 +62,7 @@ Execute the command using node or npm
 $ git clone https://github.com/github/ghec-audit-log-cli
 $ cd ghec-audit-log-cli
 $ npm install
+```
 
 ### npm
 

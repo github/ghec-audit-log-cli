@@ -10,7 +10,8 @@ const { validateInput } = require('./ghec-audit-log-utils')
 
 // Obtain configuration
 const { program } = require('commander')
-program.version('1.0.0', '-v, --version', 'Output the current version')
+const mypackage = require('./package.json')
+program.version(mypackage.version, '-v, --version', 'Output the current version')
   .option('-t, --token <string>', 'the token to access the API (mandatory)')
   .option('-o, --org <string>', 'the organization we want to extract the audit log from')
   .option('-cfg, --config <string>', 'location for the config yaml file. Default ".ghec-audit-log"', './.ghec-audit-log')

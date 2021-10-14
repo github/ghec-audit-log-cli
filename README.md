@@ -45,6 +45,8 @@ To use this CLI you will need to use a [personal access token (PAT)](https://doc
 
 Endpoint source | Needed scopes
 --------------- | -------------
+User            | `read:user`
+Repository      | `public_repo`
 Organization    | `read:org`
 Enterprise      | `admin:enterprise`
 

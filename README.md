@@ -1,3 +1,13 @@
+> [!WARNING]
+> ### This repository has been deprecated and is no longer maintained
+>
+> The features of this tool are now natively supported in GitHub, please explore the following options;
+> - [Audit Log Streaming](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise)
+> - Access the Audit Log directly via our APIs
+>   - [REST API: Audit Log](https://docs.github.com/en/enterprise-cloud@latest/rest/enterprise-admin/audit-log?apiVersion=2022-11-28)
+>   - [GraphQL: Audit Log](https://docs.github.com/en/enterprise-cloud@latest/graphql/reference/unions#organizationauditentry)
+> - Query the Audit Log APIs via our [`gh` CLI](https://cli.github.com/manual/gh_api)
+
 # CLI for the Audit Log using GHEC
 
 This CLI made in node helps on querying the audit log. It can query the full
